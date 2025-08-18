@@ -634,8 +634,8 @@ body > *:not(.container) img[src*="opus"] {
         <div>
           <label>Fence type</label>
           <select id="fenceType">
-            <option value="balustrade">Balustrade (14–20 mm)</option>
-            <option value="pool">Pool Fence (15–99 mm)</option>
+            <option value="balustrade">Balustrade </option>
+            <option value="pool">Pool Fence </option>
           </select>
         </div>
 
@@ -1233,10 +1233,10 @@ function refreshSelectors() {
   // Set options - use 17.2 display for pool fence but keep 17.52 as value
   let opts;
   if (pool) {
+    // For pool fences, only 12mm and 15mm toughened glass are allowed. Laminated glass (e.g. 17.52mm) is not permitted.
     opts = [
       {value: '12', display: '12'},
-      {value: '15', display: '15'},
-      {value: '17.52', display: '17.2'}
+      {value: '15', display: '15'}
     ];
   } else {
     // Balustrade
@@ -1260,19 +1260,12 @@ function refreshSelectors() {
 
   // Handle pool fence thickness restrictions by wind zone
   if(pool) {
-    if (zone === 'VH' || zone === 'EH') {
-      // 12mm not suitable for VH/EH
+    // Restrict glass thickness by wind zone for pool fences.
+    // 12 mm is not suitable for EH wind zone but is allowed for VH and lower zones.
+    if (zone === 'EH') {
       const opt12 = thk.querySelector('option[value="12"]');
       if(opt12) opt12.disabled = true;
       if(thk.value === '12') thk.value = '15';
-    }
-    if (zone === 'EH') {
-      // Only 17.52mm suitable for EH
-      ['12', '15'].forEach(val => {
-        const opt = thk.querySelector(`option[value="${val}"]`);
-        if(opt) opt.disabled = true;
-      });
-      thk.value = '17.52';
     }
   } else {
     // Re-enable all options for balustrade
@@ -1504,10 +1497,8 @@ function refreshSelectors() {
     let edge = ps1Row.edge;
     if (typeof EDGE_MIN !== 'undefined' && edge < EDGE_MIN) edge = EDGE_MIN;
     let MAX_SPACING = ps1Row.internal;
-    if (MAX_SPACING >= 999) {
-      return alert(`⚠️ Warning: ${thk}mm glass at ${ht}mm height in ${zone} wind zone is not suitable for ${pool ? 'pool fence' : 'balustrade'} applications.\n\nThis combination exceeds SP14 PS1 structural limits. Please adjust your selections:\n• Try a different glass thickness\n• Try a different glass height\n• Try a lower wind zone if applicable`);
-    }
-    if (MAX_SPACING >= 999) {
+    // Only treat extremely large spacing values as invalid. SP14 allows spacing up to 1200 mm for pool fences.
+    if (MAX_SPACING > 2000) {
       return alert(`⚠️ Warning: ${thk}mm glass at ${ht}mm height in ${zone} wind zone is not suitable for ${pool ? 'pool fence' : 'balustrade'} applications.\n\nThis combination exceeds SP14 PS1 structural limits. Please adjust your selections:\n• Try a different glass thickness\n• Try a different glass height\n• Try a lower wind zone if applicable`);
     }
     // Determine spigot mode (auto / 2 / 3)
@@ -1529,15 +1520,17 @@ function refreshSelectors() {
 
     // Dynamic gap and panel layout logic
     // Gap allowances per specification
-    // Pool fences allow 10–60 mm gaps; balustrades allow 10–26 mm gaps
-    const gMin = 10, gMax = fence === 'pool' ? 60 : 26;
+    // Pool fences allow 10–50 mm gaps; balustrades allow 10–25 mm gaps
+    const poolFlag = fence === 'pool';
+    const gMin = 10, gMax = poolFlag ? 50 : 25;
     layouts = []; sideLens = spans;
     let total = 0, panels = [], posts = 0, rails = 0, gasket = 0, handrailMeters = 0;
 
     function sd50Sym(run, minGap, maxGap, maxPanel) {
       let cnt = Math.ceil(run / maxPanel);
       while (cnt < 600) {
-        let pw = Math.min(maxPanel, Math.floor(run / cnt / 50) * 50);
+        // Quantise panel width to the nearest 25 mm instead of 50 mm to allow finer increments
+        let pw = Math.min(maxPanel, Math.floor(run / cnt / 25) * 25);
         while (pw >= 200) {
           let discs = Math.max(2, Math.ceil((pw - 2 * edge) / MAX_SPACING) + 1);
           if (discs > MAX_DISCS_PER_PANEL) {
@@ -1550,7 +1543,7 @@ function refreshSelectors() {
           if (gap >= minGap && gap <= maxGap) {
             return { panelWidths: Array(cnt).fill(pw), gap, run };
           }
-          pw -= 50;
+          pw -= 25;
         }
         cnt++;
       }
@@ -1559,8 +1552,8 @@ function refreshSelectors() {
     function sd50Mix(run, minGap, maxGap, maxPanel) {
       let cnt = Math.ceil(run / maxPanel);
       while (cnt < 600) {
-        for (let A = maxPanel; A >= 200; A -= 50) {
-          for (let B = A; B >= A - 200; B -= 50) {
+        for (let A = maxPanel; A >= 200; A -= 25) {
+          for (let B = A; B >= Math.max(200, A - 200); B -= 25) {
             for (let k = 1; k < cnt; k++) {
               let discsA = Math.max(2, Math.ceil((A - 2 * edge) / MAX_SPACING) + 1);
               let discsB = Math.max(2, Math.ceil((B - 2 * edge) / MAX_SPACING) + 1);
@@ -1585,12 +1578,13 @@ function refreshSelectors() {
       const gateAdjustedSym = (run, min, max, maxP) => {
         let cnt = Math.ceil(run / maxP);
         while (cnt < 600) {
-          let pw = Math.min(maxP, Math.floor(run / cnt / 50) * 50);
+        // Quantise panel width to the nearest 25 mm for gate scenarios
+        let pw = Math.min(maxP, Math.floor(run / cnt / 25) * 25);
           while (pw >= 200) {
             // Modified gap calculation: cnt gaps instead of cnt+1 (gate replaces one gap)
             const gap = (run - pw * cnt) / cnt;
             if (gap >= min && gap <= max) return { panelWidths: Array(cnt).fill(pw), gap, run };
-            pw -= 50;
+            pw -= 25;
           }
           cnt++;
         }
@@ -1600,8 +1594,8 @@ function refreshSelectors() {
       const gateAdjustedMix = (run, min, max, maxP) => {
         let cnt = Math.ceil(run / maxP);
         while (cnt < 600) {
-          for (let A = maxP; A >= 200; A -= 50) {
-            for (let B = A; B >= A - 200; B -= 50) {
+        for (let A = maxP; A >= 200; A -= 25) {
+          for (let B = A; B >= Math.max(200, A - 200); B -= 25) {
               for (let k = 1; k < cnt; k++) {
                 const tot = (cnt - k) * A + k * B;
                 // Modified gap calculation: cnt gaps instead of cnt+1
