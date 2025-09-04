@@ -4,14 +4,14 @@
 
 
   <meta charset="utf-8">
-  <title>Opus Hardware – SP14 Designer (beta)</title>
+  <title>Opus Hardware – SP15 Designer (beta)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
 <!-- 
-SP14 Designer Notes:
- - PS1 tables: Uses SP14 internal spacing and overhang values. Balustrade tables cover glass thicknesses 12, 13.52, 15 and 17.52 mm with height bands up to 1300 mm and wind zones L, M, H, VH, EH. Pool tables cover 12 mm and 15 mm thicknesses with height ranges 1200–1300 mm. Edge distances are 250 mm for balustrade and 500 mm (with reduced edge distances 375 mm/300 mm for higher wind zones) for pool as per SP14 PS1.
- - Spigot calculation: For each panel, spigots = max(2, ceil((panelWidth − 2 × edge) / internalSpacing) + 1). Spigots are limited by spigot mode (auto: as needed; 2 or 3 posts per panel). Panel widths are found using the existing symmetrical/mixed solver with maximum width = edge × 2 + (spigots − 1) × internalSpacing and gap constraints (10–60 mm for pool, 10–26 mm for balustrade).
+SP15 Designer Notes:
+ - PS1 tables: Uses SP15 internal spacing and overhang values. Balustrade tables cover glass thicknesses 12, 13.52, 15 and 17.52 mm with height bands up to 1300 mm and wind zones L, M, H, VH, EH. Pool tables cover 12 mm and 15 mm thicknesses with height ranges 1200–1300 mm. Edge distances are generally 250 mm for balustrade zones but reduce to 200 mm for Extra‑High. Pool edge distances start at 500 mm and reduce to 375 mm or 300 mm depending on wind zone. Extra‑high wind zone is not permitted for 12 mm pool glass.
+ - Spigot calculation: For each panel, spigots = max(2, ceil((panelWidth − 2 × edge) / internalSpacing) + 1). Spigots are limited by spigot mode (auto: as needed; 2 or 3 spigots per panel). Panel widths are found using the existing symmetrical/mixed solver with maximum width = edge × 2 + (spigots − 1) × internalSpacing and gap constraints (10–60 mm for pool, 10–26 mm for balustrade).
  - Gate math: Gate clear opening subtracts 890 mm from the selected run (includes hinge and latch allowances). Two gate posts are added per gate. Gate hardware codes ASC180 (hinges) and PL180GG (latch) are included. Hinge‑leaf and minimum hinge‑panel width rules follow SD50 logic.
- - Deviations: SD50‑specific disc head picker, packers and disc powdercoat logic have been removed. Discs are replaced by posts/spigots and fixings kits for SP14. 3D view renders SP14 posts and spigots (cylinders) instead of discs.
+ - Deviations: SD50‑specific disc head picker, packers and disc powdercoat logic have been removed. Discs are replaced by posts/spigots and fixing kits for SP15. 3D view renders SP15 posts and spigots (cylinders) instead of discs.
 -->
 
   <!-- j        <div>
@@ -25,82 +25,86 @@ SP14 Designer Notes:
           </select>
         </div> PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- SP14 PS1 spacing & edge distances loaded from CSV -->
+  <!-- SP15 PS1 spacing & edge distances loaded from CSV -->
   <script>
-  // SP14 PS1 data: each entry defines the internal spacing and edge distance for a particular system, thickness,
+  // SP15 PS1 data: each entry defines the internal spacing and edge distance for a particular system, thickness,
   // height band and wind zone. This table is generated from the uploaded CSV. Do not modify manually.
-  const SP14_PS1 = [
+  const SP15_PS1 = [
     // Balustrade 12mm thickness
     {"system":"balustrade","thk":12.0,"hmin":1000,"hmax":1150,"zone":"L","internal":800,"edge":250},
-    {"system":"balustrade","thk":12.0,"hmin":1150,"hmax":1200,"zone":"L","internal":720,"edge":250},
+    {"system":"balustrade","thk":12.0,"hmin":1150,"hmax":1200,"zone":"L","internal":750,"edge":250},
     {"system":"balustrade","thk":12.0,"hmin":1000,"hmax":1150,"zone":"M","internal":800,"edge":250},
-    {"system":"balustrade","thk":12.0,"hmin":1150,"hmax":1200,"zone":"M","internal":720,"edge":250},
-    {"system":"balustrade","thk":12.0,"hmin":1000,"hmax":1100,"zone":"H","internal":800,"edge":250},
-    {"system":"balustrade","thk":12.0,"hmin":1100,"hmax":1200,"zone":"H","internal":720,"edge":250},
-    {"system":"balustrade","thk":12.0,"hmin":1000,"hmax":1050,"zone":"VH","internal":800,"edge":250},
-    {"system":"balustrade","thk":12.0,"hmin":1050,"hmax":1100,"zone":"VH","internal":720,"edge":250},
-    {"system":"balustrade","thk":12.0,"hmin":1000,"hmax":1050,"zone":"EH","internal":720,"edge":250},
+    {"system":"balustrade","thk":12.0,"hmin":1150,"hmax":1200,"zone":"M","internal":750,"edge":250},
+    {"system":"balustrade","thk":12.0,"hmin":1000,"hmax":1150,"zone":"H","internal":800,"edge":250},
+    {"system":"balustrade","thk":12.0,"hmin":1150,"hmax":1200,"zone":"H","internal":750,"edge":250},
+    {"system":"balustrade","thk":12.0,"hmin":1000,"hmax":1100,"zone":"VH","internal":800,"edge":250},
+    {"system":"balustrade","thk":12.0,"hmin":1050,"hmax":1150,"zone":"VH","internal":750,"edge":250},
+    {"system":"balustrade","thk":12.0,"hmin":1000,"hmax":1050,"zone":"EH","internal":800,"edge":200},
+    {"system":"balustrade","thk":12.0,"hmin":1050,"hmax":1100,"zone":"EH","internal":750,"edge":200},
     // Balustrade 13.52mm thickness (same as 12mm)
     {"system":"balustrade","thk":13.52,"hmin":1000,"hmax":1150,"zone":"L","internal":800,"edge":250},
-    {"system":"balustrade","thk":13.52,"hmin":1150,"hmax":1200,"zone":"L","internal":720,"edge":250},
+    {"system":"balustrade","thk":13.52,"hmin":1150,"hmax":1200,"zone":"L","internal":750,"edge":250},
     {"system":"balustrade","thk":13.52,"hmin":1000,"hmax":1150,"zone":"M","internal":800,"edge":250},
-    {"system":"balustrade","thk":13.52,"hmin":1150,"hmax":1200,"zone":"M","internal":720,"edge":250},
-    {"system":"balustrade","thk":13.52,"hmin":1000,"hmax":1100,"zone":"H","internal":800,"edge":250},
-    {"system":"balustrade","thk":13.52,"hmin":1100,"hmax":1200,"zone":"H","internal":720,"edge":250},
-    {"system":"balustrade","thk":13.52,"hmin":1000,"hmax":1050,"zone":"VH","internal":800,"edge":250},
-    {"system":"balustrade","thk":13.52,"hmin":1050,"hmax":1100,"zone":"VH","internal":720,"edge":250},
-    {"system":"balustrade","thk":13.52,"hmin":1000,"hmax":1050,"zone":"EH","internal":720,"edge":250},
+    {"system":"balustrade","thk":13.52,"hmin":1150,"hmax":1200,"zone":"M","internal":750,"edge":250},
+    {"system":"balustrade","thk":13.52,"hmin":1000,"hmax":1150,"zone":"H","internal":800,"edge":250},
+    {"system":"balustrade","thk":13.52,"hmin":1150,"hmax":1200,"zone":"H","internal":750,"edge":250},
+    {"system":"balustrade","thk":13.52,"hmin":1000,"hmax":1100,"zone":"VH","internal":800,"edge":250},
+    {"system":"balustrade","thk":13.52,"hmin":1050,"hmax":1150,"zone":"VH","internal":750,"edge":250},
+    {"system":"balustrade","thk":13.52,"hmin":1000,"hmax":1050,"zone":"EH","internal":800,"edge":200},
+    {"system":"balustrade","thk":13.52,"hmin":1050,"hmax":1100,"zone":"EH","internal":750,"edge":200},
     // Balustrade 15mm thickness
-    {"system":"balustrade","thk":15.0,"hmin":1000,"hmax":1200,"zone":"L","internal":800,"edge":250},
-    {"system":"balustrade","thk":15.0,"hmin":1200,"hmax":1300,"zone":"L","internal":720,"edge":250},
-    {"system":"balustrade","thk":15.0,"hmin":1000,"hmax":1200,"zone":"M","internal":800,"edge":250},
-    {"system":"balustrade","thk":15.0,"hmin":1200,"hmax":1300,"zone":"M","internal":720,"edge":250},
-    {"system":"balustrade","thk":15.0,"hmin":1000,"hmax":1200,"zone":"H","internal":800,"edge":250},
-    {"system":"balustrade","thk":15.0,"hmin":1200,"hmax":1300,"zone":"H","internal":720,"edge":250},
-    {"system":"balustrade","thk":15.0,"hmin":1000,"hmax":1150,"zone":"VH","internal":800,"edge":250},
-    {"system":"balustrade","thk":15.0,"hmin":1150,"hmax":1250,"zone":"VH","internal":720,"edge":250},
-    {"system":"balustrade","thk":15.0,"hmin":1000,"hmax":1100,"zone":"EH","internal":800,"edge":250},
-    {"system":"balustrade","thk":15.0,"hmin":1100,"hmax":1200,"zone":"EH","internal":720,"edge":250},
-    // Balustrade 17.52mm thickness (same as 15mm)
-    {"system":"balustrade","thk":17.52,"hmin":1000,"hmax":1200,"zone":"L","internal":800,"edge":250},
-    {"system":"balustrade","thk":17.52,"hmin":1200,"hmax":1300,"zone":"L","internal":720,"edge":250},
-    {"system":"balustrade","thk":17.52,"hmin":1000,"hmax":1200,"zone":"M","internal":800,"edge":250},
-    {"system":"balustrade","thk":17.52,"hmin":1200,"hmax":1300,"zone":"M","internal":720,"edge":250},
-    {"system":"balustrade","thk":17.52,"hmin":1000,"hmax":1200,"zone":"H","internal":800,"edge":250},
-    {"system":"balustrade","thk":17.52,"hmin":1200,"hmax":1300,"zone":"H","internal":720,"edge":250},
-    {"system":"balustrade","thk":17.52,"hmin":1000,"hmax":1150,"zone":"VH","internal":800,"edge":250},
-    {"system":"balustrade","thk":17.52,"hmin":1150,"hmax":1250,"zone":"VH","internal":720,"edge":250},
-    {"system":"balustrade","thk":17.52,"hmin":1000,"hmax":1100,"zone":"EH","internal":800,"edge":250},
-    {"system":"balustrade","thk":17.52,"hmin":1100,"hmax":1200,"zone":"EH","internal":720,"edge":250},
+    {"system":"balustrade","thk":15.0,"hmin":1000,"hmax":1250,"zone":"L","internal":800,"edge":250},
+    {"system":"balustrade","thk":15.0,"hmin":1250,"hmax":1300,"zone":"L","internal":750,"edge":250},
+    {"system":"balustrade","thk":15.0,"hmin":1000,"hmax":1250,"zone":"M","internal":800,"edge":250},
+    {"system":"balustrade","thk":15.0,"hmin":1250,"hmax":1300,"zone":"M","internal":750,"edge":250},
+    {"system":"balustrade","thk":15.0,"hmin":1000,"hmax":1250,"zone":"H","internal":800,"edge":250},
+    {"system":"balustrade","thk":15.0,"hmin":1250,"hmax":1300,"zone":"H","internal":750,"edge":250},
+    {"system":"balustrade","thk":15.0,"hmin":1000,"hmax":1200,"zone":"VH","internal":800,"edge":250},
+    {"system":"balustrade","thk":15.0,"hmin":1200,"hmax":1250,"zone":"VH","internal":750,"edge":250},
+    {"system":"balustrade","thk":15.0,"hmin":1000,"hmax":1150,"zone":"EH","internal":800,"edge":200},
+    {"system":"balustrade","thk":15.0,"hmin":1150,"hmax":1200,"zone":"EH","internal":750,"edge":200},
+    // Balustrade 17.52mm thickness (same ranges as 15mm)
+    {"system":"balustrade","thk":17.52,"hmin":1000,"hmax":1250,"zone":"L","internal":800,"edge":250},
+    {"system":"balustrade","thk":17.52,"hmin":1250,"hmax":1300,"zone":"L","internal":750,"edge":250},
+    {"system":"balustrade","thk":17.52,"hmin":1000,"hmax":1250,"zone":"M","internal":800,"edge":250},
+    {"system":"balustrade","thk":17.52,"hmin":1250,"hmax":1300,"zone":"M","internal":750,"edge":250},
+    {"system":"balustrade","thk":17.52,"hmin":1000,"hmax":1250,"zone":"H","internal":800,"edge":250},
+    {"system":"balustrade","thk":17.52,"hmin":1250,"hmax":1300,"zone":"H","internal":750,"edge":250},
+    {"system":"balustrade","thk":17.52,"hmin":1000,"hmax":1200,"zone":"VH","internal":800,"edge":250},
+    {"system":"balustrade","thk":17.52,"hmin":1200,"hmax":1250,"zone":"VH","internal":750,"edge":250},
+    {"system":"balustrade","thk":17.52,"hmin":1000,"hmax":1150,"zone":"EH","internal":800,"edge":200},
+    {"system":"balustrade","thk":17.52,"hmin":1150,"hmax":1200,"zone":"EH","internal":750,"edge":200},
     // Pool 12mm thickness
-    {"system":"pool","thk":12.0,"hmin":1200,"hmax":1200,"zone":"L","internal":1200,"edge":500},
-    {"system":"pool","thk":12.0,"hmin":1200,"hmax":1200,"zone":"M","internal":1200,"edge":500},
-    {"system":"pool","thk":12.0,"hmin":1200,"hmax":1200,"zone":"H","internal":1000,"edge":500},
-    {"system":"pool","thk":12.0,"hmin":1200,"hmax":1200,"zone":"VH","internal":750,"edge":375},
-    // No EH row for 12mm pool (not suitable)
+    {"system":"pool","thk":12.0,"hmin":1200,"hmax":1300,"zone":"L","internal":1000,"edge":500},
+    {"system":"pool","thk":12.0,"hmin":1200,"hmax":1300,"zone":"M","internal":1000,"edge":500},
+    {"system":"pool","thk":12.0,"hmin":1200,"hmax":1250,"zone":"H","internal":1000,"edge":500},
+    {"system":"pool","thk":12.0,"hmin":1200,"hmax":1250,"zone":"VH","internal":800,"edge":375},
     // Pool 15mm thickness
     {"system":"pool","thk":15.0,"hmin":1200,"hmax":1300,"zone":"L","internal":1000,"edge":500},
     {"system":"pool","thk":15.0,"hmin":1200,"hmax":1300,"zone":"M","internal":1000,"edge":500},
-    {"system":"pool","thk":15.0,"hmin":1200,"hmax":1300,"zone":"H","internal":750,"edge":375},
-    {"system":"pool","thk":15.0,"hmin":1200,"hmax":1300,"zone":"VH","internal":600,"edge":300},
-    {"system":"pool","thk":15.0,"hmin":1200,"hmax":1200,"zone":"EH","internal":600,"edge":300}
+    {"system":"pool","thk":15.0,"hmin":1200,"hmax":1300,"zone":"H","internal":1000,"edge":500},
+    {"system":"pool","thk":15.0,"hmin":1200,"hmax":1300,"zone":"VH","internal":800,"edge":375},
+    {"system":"pool","thk":15.0,"hmin":1200,"hmax":1250,"zone":"EH","internal":700,"edge":300},
+    {"system":"pool","thk":15.0,"hmin":1250,"hmax":1300,"zone":"EH","internal":600,"edge":300}
   ];
   // Minimum allowed edge distance (mm). PS1 defines maximum only; we enforce a conservative minimum of 100 mm.
   const EDGE_MIN = 100;
+// Panel width increment step. 25 mm for stock mode; 0 (continuous widths) for standard mode
+let PANEL_STEP = 25;
   /**
-   * Look up the SP14 PS1 row matching the given system ('pool' or 'balustrade'), glass thickness (string or number),
+   * Look up the SP15 PS1 row matching the given system ('pool' or 'balustrade'), glass thickness (string or number),
    * glass height (string or number) and wind zone code (L,M,H,VH,EH). Returns the closest height band if the exact
    * band does not exist. If nothing matches, returns null.
    */
-function ps14Lookup(system, thk, ht, zone) {
+  function ps15Lookup(system, thk, ht, zone) {
     thk = parseFloat(thk);
     ht = parseFloat(ht);
     zone = String(zone || '').toUpperCase();
     // Filter rows that match system, thickness and zone and where height lies within band
-    let rows = SP14_PS1.filter(r => r.system === system && Math.abs(r.thk - thk) < 0.01 && r.zone === zone && ht >= r.hmin && ht <= r.hmax);
+    let rows = SP15_PS1.filter(r => r.system === system && Math.abs(r.thk - thk) < 0.01 && r.zone === zone && ht >= r.hmin && ht <= r.hmax);
     if (rows.length > 0) return rows[0];
     // If no exact band match, select the closest band (by mid-point) for the same system/thk/zone
-    rows = SP14_PS1.filter(r => r.system === system && Math.abs(r.thk - thk) < 0.01 && r.zone === zone);
+    rows = SP15_PS1.filter(r => r.system === system && Math.abs(r.thk - thk) < 0.01 && r.zone === zone);
     if (rows.length === 0) return null;
     rows.sort((a, b) => Math.abs(((a.hmin + a.hmax) / 2) - ht) - Math.abs(((b.hmin + b.hmax) / 2) - ht));
     return rows[0];
@@ -565,9 +569,9 @@ body > *:not(.container) img[src*="opus"] {
   
   <div class="title-card">
     <h1 id="mainTitle" style="display:flex;align-items:center;justify-content:center;gap:1.5rem;">
-      <!-- Updated to SP14: use SP14 product image and update title -->
-      <img src="https://cdn.shopify.com/s/files/1/0663/2738/0132/files/SP14-SS.jpg?v=1745468490" alt="SP14 System" style="width:80px;height:80px;object-fit:contain;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:block!important;" onload="console.log('SP14 image loaded successfully')" onerror="console.log('Failed to load SP14 image, trying fallback'); this.src='https://via.placeholder.com/80x80/0077c8/ffffff?text=SP14';">
-      Opus Hardware – SP14 Designer
+      <!-- Updated to SP15: use SP15 product image and update title -->
+      <img src="https://cdn.shopify.com/s/files/1/0663/2738/0132/files/SP15-SS.jpg?v=1745876540" alt="SP15 System" style="width:80px;height:80px;object-fit:contain;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:block!important;" onload="console.log('SP15 image loaded successfully')" onerror="console.log('Failed to load SP15 image, trying fallback'); this.src='https://via.placeholder.com/80x80/0077c8/ffffff?text=SP15';">
+      Opus Hardware – SP15 Designer
       <span class="beta-badge">Beta</span>
     </h1>
     <p class="subtitle">Professional fence design and calculation tool</p>
@@ -643,11 +647,10 @@ body > *:not(.container) img[src*="opus"] {
           <label>Fixing type</label>
           <select id="fixingType">
             <option value="">– select –</option>
-            <option value="Concrete (Single Fix)">Concrete (Single Fix)</option>
-            <option value="Concrete (Double Fix)">Concrete (Double Fix)</option>
-            <option value="Steel Fix">Steel Fix</option>
-            <option value="Timber Fix (Coach Screw)">Timber Fix (Coach Screw)</option>
-            <option value="Timber Fix (Through Bolts)">Timber Fix (Through Bolts)</option>
+            <option value="Concrete">Concrete</option>
+            <option value="Steel">Steel</option>
+            <option value="Timber (Coach Screw)">Timber (Coach Screw)</option>
+            <option value="Timber (Bolt Through)">Timber (Bolt Through)</option>
           </select>
         </div>
 
@@ -693,15 +696,30 @@ body > *:not(.container) img[src*="opus"] {
         </div>
         <input id="cornerCount" type="hidden">
 
-        <!-- mixed‐panel checkbox -->
-        <div style="grid-column:1/2">
+        <!-- mixed‑panel checkbox -->
+        <div id="allowMixedContainer" style="grid-column:1/2">
           <label>
             <input type="checkbox" id="allowMixed">
             Allow mixed panel sizes (±200 mm)
           </label>
         </div>
+        <!-- Glass Mode & Gap selectors (relocated for compact layout) -->
+        <div style="grid-column:1/3; margin-top:0.5rem; display:flex; flex-wrap:wrap; gap:1rem; align-items:flex-end;">
+          <div style="min-width:140px;">
+            <label>Glass Mode</label>
+            <!-- Reuse the existing glassType id so that existing JavaScript continues to work -->
+            <select id="glassType" style="width:100%; min-width:120px;">
+              <option value="standard" selected>Standard</option>
+              <option value="stock">Stock Sizes</option>
+            </select>
+          </div>
+          <div id="gapSelectContainer" style="min-width:140px;">
+            <label>Gap size (mm)</label>
+            <select id="gapSize" style="width:100%; min-width:120px;"></select>
+          </div>
+        </div>
         <div>
-          <!-- SP14 spigot mode selector -->
+          <!-- SP15 spigot mode selector -->
           <label>Spigots per panel:</label>
           <div style="display:flex;gap:0.5rem;align-items:center;">
             <label><input type="radio" name="spigotMode" id="spigotModeAuto" value="auto" checked>Auto</label>
@@ -712,8 +730,8 @@ body > *:not(.container) img[src*="opus"] {
       </div>
 
       <!-- DISC HEAD TYPE PICKER -->
-      <!-- SP14: Removed SD50 disc head picker and extra packers -->
-      <!-- (disc head selector and extra packer UI elements removed for SP14 designer) -->
+      <!-- SP15: Removed SD50 disc head picker and extra packers -->
+      <!-- (disc head selector and extra packer UI elements removed for SP15 designer) -->
 
       <button id="calcBtn">Calculate compliant layout</button>
       <div id="output"></div>
@@ -1233,18 +1251,18 @@ function refreshSelectors() {
   // Set options - use 17.2 display for pool fence but keep 17.52 as value
   let opts;
   if (pool) {
-    // For pool fences, only 12mm and 15mm toughened glass are allowed. Laminated glass (e.g. 17.52mm) is not permitted.
+    // Pool fence: SP15 supports 12 mm and 15 mm glass only
     opts = [
-      {value: '12', display: '12'},
-      {value: '15', display: '15'}
+      { value: '12', display: '12' },
+      { value: '15', display: '15' }
     ];
   } else {
-    // Balustrade
+    // Balustrade: SP15 supports 12, 13.52, 15 and 17.52 mm glass
     opts = [
-      {value: '12', display: '12'},
-      {value: '13.52', display: '13.52'},
-      {value: '15', display: '15'},
-      {value: '17.52', display: '17.52'}
+      { value: '12', display: '12' },
+      { value: '13.52', display: '13.52' },
+      { value: '15', display: '15' },
+      { value: '17.52', display: '17.52' }
     ];
   }
   
@@ -1259,25 +1277,28 @@ function refreshSelectors() {
   }
 
   // Handle pool fence thickness restrictions by wind zone
-  if(pool) {
-    // Restrict glass thickness by wind zone for pool fences.
-    // 12 mm is not suitable for EH wind zone but is allowed for VH and lower zones.
+  if (pool) {
+    // In SP15, 12 mm glass is not suitable for Extra High (EH) wind zone
     if (zone === 'EH') {
       const opt12 = thk.querySelector('option[value="12"]');
-      if(opt12) opt12.disabled = true;
-      if(thk.value === '12') thk.value = '15';
+      if (opt12) opt12.disabled = true;
+      if (thk.value === '12') thk.value = '15';
     }
   } else {
     // Re-enable all options for balustrade
-    opts.forEach(v => {
-      const opt = thk.querySelector(`option[value="${v}"]`);
-      if(opt) opt.disabled = false;
+    opts.forEach((o) => {
+      const opt = thk.querySelector(`option[value="${o.value}"]`);
+      if (opt) opt.disabled = false;
     });
   }
 
+  // Restrict glass heights for pool fences between 1200 mm and 1300 mm inclusive.
+  // SP15 PS1 allows heights up to 1300 mm for L/M/H zones and up to 1250 mm for some VH/EH cases.
+  // Rather than hard‑coding each zone’s max, we simply allow the full 1200–1300 mm range here. The PS1 lookup
+  // will fall back to the nearest band if an exact match does not exist.
   document.querySelectorAll('#glassHt option')
-    .forEach(o => o.disabled = pool && (+o.textContent < 1200 || +o.textContent > 1250));
-  if(pool && (+$('glassHt').value < 1200 || +$('glassHt').value > 1250)) $('glassHt').value = '1200';
+    .forEach(o => o.disabled = pool && (+o.textContent < 1200 || +o.textContent > 1300));
+  if(pool && (+$('glassHt').value < 1200 || +$('glassHt').value > 1300)) $('glassHt').value = '1200';
 
   // Save current handrail selection
   const handrailSelect = $('handrailType');
@@ -1412,6 +1433,54 @@ function refreshSelectors() {
     return Object.entries(m).map(([w,n])=>`${n}× @${w} mm`).join('<br>');
   };
 
+  // ─── Glass Mode and Gap selectors logic ───────────────────
+  // Populate gap options based on fence type and toggle UI based on glass mode.
+  function updateGapOptions() {
+    const fenceVal = $('fenceType') ? $('fenceType').value : '';
+    const gapSelect = $('gapSize');
+    if (!gapSelect) return;
+    // Clear existing options
+    gapSelect.innerHTML = '';
+    // Determine gap range: 10–25 mm for balustrade, 10–50 mm for pool fences
+    let minGap = 10;
+    let maxGap = (fenceVal === 'pool') ? 50 : 25;
+    for (let g = minGap; g <= maxGap; g++) {
+      const opt = document.createElement('option');
+      opt.value = g;
+      opt.textContent = g;
+      gapSelect.appendChild(opt);
+    }
+    // Default to a reasonable starting value: 15 mm for balustrade, 20 mm for pool
+    const defaultGap = (fenceVal === 'pool') ? 20 : 15;
+    if (defaultGap >= minGap && defaultGap <= maxGap) gapSelect.value = defaultGap;
+  }
+
+  function updateGlassModeUI() {
+    const mode = $('glassType') ? $('glassType').value : 'standard';
+    const allowMixedContainer = document.getElementById('allowMixedContainer');
+    const gapSelectContainer = document.getElementById('gapSelectContainer');
+    if (!allowMixedContainer || !gapSelectContainer) return;
+    if (mode === 'standard') {
+      // In Standard mode, allow continuous panel widths and let user choose a fixed gap.
+      gapSelectContainer.style.display = '';
+      allowMixedContainer.style.display = 'none';
+    } else {
+      // In Stock mode, hide gap selector and allow mixing sizes
+      gapSelectContainer.style.display = 'none';
+      allowMixedContainer.style.display = '';
+    }
+  }
+
+  // Initialize gap and glass mode UI once the DOM has loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    updateGapOptions();
+    updateGlassModeUI();
+    const fenceSelect = $('fenceType');
+    if (fenceSelect) fenceSelect.addEventListener('change', updateGapOptions);
+    const glassSelect = $('glassType');
+    if (glassSelect) glassSelect.addEventListener('change', updateGlassModeUI);
+  });
+
   // ─── Calculate ─────────────────────────────────────────────
   $('calcBtn').onclick = function() {
     console.log('Calculate button clicked');
@@ -1431,8 +1500,9 @@ function refreshSelectors() {
     const hr = $('handrailType').value;
     const fin = $('finishType').value;
     const fix = $('fixingType').value;
-    const allowMix = $('allowMixed').checked;
-    // SP14: Extra packers are not applicable; set to zero to avoid null errors
+    // Determine mixing allowance; this will be overridden by glass mode logic below
+    let allowMix = $('allowMixed').checked;
+    // SP15: Extra packers are not applicable; set to zero to avoid null errors
     const extraPackers = 0;
 
     console.log('Calculation inputs:', {fence, thk, ht, zone, hr, fin, fix});
@@ -1488,18 +1558,18 @@ function refreshSelectors() {
       }
     }
 
-    // Determine edge and internal spacing using SP14 PS1 lookup
+    // Determine edge and internal spacing using SP15 PS1 lookup
     const system = pool ? 'pool' : 'balustrade';
-    const ps1Row = typeof ps14Lookup === 'function' ? ps14Lookup(system, thk, ht, zone) : null;
+    const ps1Row = typeof ps15Lookup === 'function' ? ps15Lookup(system, thk, ht, zone) : null;
     if (!ps1Row) {
-      return alert(`⚠️ Warning: No SP14 PS1 data available for ${thk}mm glass at ${ht}mm height in ${zone} zone.\n\nThis combination is not within SP14 PS1 specification. Please change the thickness, height or wind zone to achieve compliance.`);
+      return alert(`⚠️ Warning: No SP15 PS1 data available for ${thk}mm glass at ${ht}mm height in ${zone} zone.\n\nThis combination is not within SP15 PS1 specification. Please change the thickness, height or wind zone to achieve compliance.`);
     }
     let edge = ps1Row.edge;
     if (typeof EDGE_MIN !== 'undefined' && edge < EDGE_MIN) edge = EDGE_MIN;
     let MAX_SPACING = ps1Row.internal;
-    // Only treat extremely large spacing values as invalid. SP14 allows spacing up to 1200 mm for pool fences.
-    if (MAX_SPACING > 2000) {
-      return alert(`⚠️ Warning: ${thk}mm glass at ${ht}mm height in ${zone} wind zone is not suitable for ${pool ? 'pool fence' : 'balustrade'} applications.\n\nThis combination exceeds SP14 PS1 structural limits. Please adjust your selections:\n• Try a different glass thickness\n• Try a different glass height\n• Try a lower wind zone if applicable`);
+    // Treat only spacing values greater than 1000 mm as invalid (SP15 allows up to 1000 mm internal spacing).  Remove duplicate check.
+    if (MAX_SPACING > 1000) {
+      return alert(`⚠️ Warning: ${thk}mm glass at ${ht}mm height in ${zone} wind zone is not suitable for ${pool ? 'pool fence' : 'balustrade'} applications.\n\nThis combination exceeds SP15 PS1 structural limits. Please adjust your selections:\n• Try a different glass thickness\n• Try a different glass height\n• Try a lower wind zone if applicable`);
     }
     // Determine spigot mode (auto / 2 / 3)
     const spigotMode = (document.querySelector('input[name="spigotMode"]:checked') || {}).value || 'auto';
@@ -1519,18 +1589,64 @@ function refreshSelectors() {
     if (allow3El) allow3El.parentElement.style.display = 'none';
 
     // Dynamic gap and panel layout logic
-    // Gap allowances per specification
-    // Pool fences allow 10–50 mm gaps; balustrades allow 10–25 mm gaps
+    // Determine glass mode and selected gap. In Standard mode, panel widths are continuous (PANEL_STEP = 0) and
+    // the gap is fixed to the user‑selected value. In Stock mode, panel widths are quantised to 25 mm and gap
+    // ranges follow SP15 specifications (10–25 mm balustrade, 10–50 mm pool).
+    const glassMode = $('glassType') ? $('glassType').value : 'standard';
+    const selectedGap = +($('gapSize') ? $('gapSize').value : 0);
+    if (glassMode === 'standard') {
+      PANEL_STEP = 0;
+      allowMix = false;
+    } else {
+      PANEL_STEP = 25;
+      // allowMix stays as set by the allowMixed checkbox
+    }
     const poolFlag = fence === 'pool';
-    const gMin = 10, gMax = poolFlag ? 50 : 25;
-    layouts = []; sideLens = spans;
+    let gMin, gMax;
+    if (glassMode === 'standard') {
+      gMin = selectedGap;
+      gMax = selectedGap;
+    } else {
+      gMin = 10;
+      gMax = poolFlag ? 50 : 25;
+    }
+    layouts = [];
+    sideLens = spans;
     let total = 0, panels = [], posts = 0, rails = 0, gasket = 0, handrailMeters = 0;
 
     function sd50Sym(run, minGap, maxGap, maxPanel) {
       let cnt = Math.ceil(run / maxPanel);
       while (cnt < 600) {
-        // Quantise panel width to the nearest 25 mm instead of 50 mm to allow finer increments
-        let pw = Math.min(maxPanel, Math.floor(run / cnt / 25) * 25);
+        // If continuous widths (PANEL_STEP <= 0) and fixed gap, derive panel width directly
+        if ((PANEL_STEP <= 0 || PANEL_STEP < 1) && Math.abs(minGap - maxGap) < 1e-9) {
+          const desiredGap = minGap;
+          let pw = (run - desiredGap * (cnt + 1)) / cnt;
+          // Snap down to nearest increment if PANEL_STEP > 0
+          if (PANEL_STEP > 0) {
+            pw = Math.floor(pw / PANEL_STEP) * PANEL_STEP;
+          }
+          while (pw >= 200) {
+            let discs = Math.max(2, Math.ceil((pw - 2 * edge) / MAX_SPACING) + 1);
+            if (discs > MAX_DISCS_PER_PANEL) {
+              pw = edge * 2 + (MAX_DISCS_PER_PANEL - 1) * MAX_SPACING;
+              discs = MAX_DISCS_PER_PANEL;
+            }
+            let maxPanelWidth = edge * 2 + (discs - 1) * MAX_SPACING;
+            if (pw > maxPanelWidth) pw = maxPanelWidth;
+            const gap = (run - pw * cnt) / (cnt + 1);
+            if (gap >= minGap && gap <= maxGap) {
+              return { panelWidths: Array(cnt).fill(pw), gap, run };
+            }
+            // If PANEL_STEP <= 0, break to avoid infinite loop
+            if (PANEL_STEP <= 0) break;
+            pw -= PANEL_STEP;
+          }
+          cnt++;
+          continue;
+        }
+        // Otherwise scan panel widths in increments of PANEL_STEP
+        const step = PANEL_STEP > 0 ? PANEL_STEP : 25;
+        let pw = Math.min(maxPanel, Math.floor(run / cnt / step) * step);
         while (pw >= 200) {
           let discs = Math.max(2, Math.ceil((pw - 2 * edge) / MAX_SPACING) + 1);
           if (discs > MAX_DISCS_PER_PANEL) {
@@ -1543,7 +1659,7 @@ function refreshSelectors() {
           if (gap >= minGap && gap <= maxGap) {
             return { panelWidths: Array(cnt).fill(pw), gap, run };
           }
-          pw -= 25;
+          pw -= step;
         }
         cnt++;
       }
@@ -1551,9 +1667,11 @@ function refreshSelectors() {
     }
     function sd50Mix(run, minGap, maxGap, maxPanel) {
       let cnt = Math.ceil(run / maxPanel);
+      const step = PANEL_STEP > 0 ? PANEL_STEP : 25;
       while (cnt < 600) {
-        for (let A = maxPanel; A >= 200; A -= 25) {
-          for (let B = A; B >= Math.max(200, A - 200); B -= 25) {
+        for (let A = maxPanel; A >= 200; A -= step) {
+          // Allow B to vary down to 200 mm or 200 mm less than A, whichever is larger, in increments of `step`
+          for (let B = A; B >= Math.max(200, A - 200); B -= step) {
             for (let k = 1; k < cnt; k++) {
               let discsA = Math.max(2, Math.ceil((A - 2 * edge) / MAX_SPACING) + 1);
               let discsB = Math.max(2, Math.ceil((B - 2 * edge) / MAX_SPACING) + 1);
@@ -1578,13 +1696,46 @@ function refreshSelectors() {
       const gateAdjustedSym = (run, min, max, maxP) => {
         let cnt = Math.ceil(run / maxP);
         while (cnt < 600) {
-        // Quantise panel width to the nearest 25 mm for gate scenarios
-        let pw = Math.min(maxP, Math.floor(run / cnt / 25) * 25);
+          // If continuous widths (PANEL_STEP <= 0) and fixed gap, derive panel width directly
+          if ((PANEL_STEP <= 0 || PANEL_STEP < 1) && Math.abs(min - max) < 1e-9) {
+            const desiredGap = min;
+            let pw = (run / cnt) - desiredGap;
+            // Snap down to nearest increment if PANEL_STEP > 0
+            if (PANEL_STEP > 0) {
+              pw = Math.floor(pw / PANEL_STEP) * PANEL_STEP;
+            }
+            while (pw >= 200) {
+              // Apply spigot constraint similar to sd50Sym
+              let discs = Math.max(2, Math.ceil((pw - 2 * edge) / MAX_SPACING) + 1);
+              if (discs > MAX_DISCS_PER_PANEL) {
+                pw = edge * 2 + (MAX_DISCS_PER_PANEL - 1) * MAX_SPACING;
+                discs = MAX_DISCS_PER_PANEL;
+              }
+              let maxPanelWidth = edge * 2 + (discs - 1) * MAX_SPACING;
+              if (pw > maxPanelWidth) pw = maxPanelWidth;
+              const gap = (run - pw * cnt) / cnt;
+              if (gap >= min && gap <= max) return { panelWidths: Array(cnt).fill(pw), gap, run };
+              if (PANEL_STEP <= 0) break;
+              pw -= PANEL_STEP;
+            }
+            cnt++;
+            continue;
+          }
+          // Otherwise scan in increments of PANEL_STEP
+          const step = PANEL_STEP > 0 ? PANEL_STEP : 25;
+          let pw = Math.min(maxP, Math.floor(run / cnt / step) * step);
           while (pw >= 200) {
-            // Modified gap calculation: cnt gaps instead of cnt+1 (gate replaces one gap)
+            // Apply spigot constraint similar to sd50Sym
+            let discs = Math.max(2, Math.ceil((pw - 2 * edge) / MAX_SPACING) + 1);
+            if (discs > MAX_DISCS_PER_PANEL) {
+              pw = edge * 2 + (MAX_DISCS_PER_PANEL - 1) * MAX_SPACING;
+              discs = MAX_DISCS_PER_PANEL;
+            }
+            let maxPanelWidth = edge * 2 + (discs - 1) * MAX_SPACING;
+            if (pw > maxPanelWidth) pw = maxPanelWidth;
             const gap = (run - pw * cnt) / cnt;
             if (gap >= min && gap <= max) return { panelWidths: Array(cnt).fill(pw), gap, run };
-            pw -= 25;
+            pw -= step;
           }
           cnt++;
         }
@@ -1593,9 +1744,11 @@ function refreshSelectors() {
 
       const gateAdjustedMix = (run, min, max, maxP) => {
         let cnt = Math.ceil(run / maxP);
+        const step = PANEL_STEP > 0 ? PANEL_STEP : 25;
         while (cnt < 600) {
-        for (let A = maxP; A >= 200; A -= 25) {
-          for (let B = A; B >= Math.max(200, A - 200); B -= 25) {
+          for (let A = maxP; A >= 200; A -= step) {
+            // Allow B to vary down to 200 mm or 200 mm less than A, whichever is larger, in increments of `step`
+            for (let B = A; B >= Math.max(200, A - 200); B -= step) {
               for (let k = 1; k < cnt; k++) {
                 const tot = (cnt - k) * A + k * B;
                 // Modified gap calculation: cnt gaps instead of cnt+1
@@ -1611,10 +1764,13 @@ function refreshSelectors() {
         return null;
       };
 
-      // First try the exact length
-      let bestLayout = allowMixed
-        ? (gateAdjustedMix(originalLen, minGap, maxGap, maxPanel) || gateAdjustedSym(originalLen, minGap, maxGap, maxPanel))
-        : (gateAdjustedSym(originalLen, minGap, maxGap, maxPanel) || gateAdjustedMix(originalLen, minGap, maxGap, maxPanel));
+      // First try the exact length. For continuous widths or when mixing is disabled, only check symmetrical layouts.
+      let bestLayout;
+      if (!allowMixed || PANEL_STEP <= 0) {
+        bestLayout = gateAdjustedSym(originalLen, minGap, maxGap, maxPanel);
+      } else {
+        bestLayout = gateAdjustedMix(originalLen, minGap, maxGap, maxPanel) || gateAdjustedSym(originalLen, minGap, maxGap, maxPanel);
+      }
       
       if (bestLayout) {
         bestLayout.adjustedLength = originalLen;
@@ -1628,9 +1784,12 @@ function refreshSelectors() {
           const adjustedLen = originalLen + (direction * nudge);
           if (adjustedLen < 200) continue;
           
-          const layout = allowMixed
-            ? (gateAdjustedMix(adjustedLen, minGap, maxGap, maxPanel) || gateAdjustedSym(adjustedLen, minGap, maxGap, maxPanel))
-            : (gateAdjustedSym(adjustedLen, minGap, maxGap, maxPanel) || gateAdjustedMix(adjustedLen, minGap, maxGap, maxPanel));
+          let layout;
+          if (!allowMixed || PANEL_STEP <= 0) {
+            layout = gateAdjustedSym(adjustedLen, minGap, maxGap, maxPanel);
+          } else {
+            layout = gateAdjustedMix(adjustedLen, minGap, maxGap, maxPanel) || gateAdjustedSym(adjustedLen, minGap, maxGap, maxPanel);
+          }
           
           if (layout) {
             if (!bestLayout || layout.panelWidths.length < bestLayout.panelWidths.length) {
@@ -1648,10 +1807,13 @@ function refreshSelectors() {
 
     // Enhanced solver with run length nudging for "unlucky" lengths
     function findBestLayout(originalLen, minGap, maxGap, maxPanel, allowMixed) {
-      // First try the exact length
-      let bestLayout = allowMixed
-        ? (sd50Mix(originalLen, minGap, maxGap, maxPanel) || sd50Sym(originalLen, minGap, maxGap, maxPanel))
-        : (sd50Sym(originalLen, minGap, maxGap, maxPanel) || sd50Mix(originalLen, minGap, maxGap, maxPanel));
+      // First try the exact length. If mixing is disabled or we are in continuous width mode, only use symmetrical layouts.
+      let bestLayout;
+      if (!allowMixed || PANEL_STEP <= 0) {
+        bestLayout = sd50Sym(originalLen, minGap, maxGap, maxPanel);
+      } else {
+        bestLayout = sd50Mix(originalLen, minGap, maxGap, maxPanel) || sd50Sym(originalLen, minGap, maxGap, maxPanel);
+      }
       
       if (bestLayout) {
         bestLayout.adjustedLength = originalLen;
@@ -1666,9 +1828,12 @@ function refreshSelectors() {
           const adjustedLen = originalLen + (direction * nudge);
           if (adjustedLen < 200) continue; // Don't go below minimum reasonable length
           
-          const layout = allowMixed
-            ? (sd50Mix(adjustedLen, minGap, maxGap, maxPanel) || sd50Sym(adjustedLen, minGap, maxGap, maxPanel))
-            : (sd50Sym(adjustedLen, minGap, maxGap, maxPanel) || sd50Mix(adjustedLen, minGap, maxGap, maxPanel));
+          let layout;
+          if (!allowMixed || PANEL_STEP <= 0) {
+            layout = sd50Sym(adjustedLen, minGap, maxGap, maxPanel);
+          } else {
+            layout = sd50Mix(adjustedLen, minGap, maxGap, maxPanel) || sd50Sym(adjustedLen, minGap, maxGap, maxPanel);
+          }
           
           if (layout) {
             // Prefer solutions with fewer panels (wider panels)
@@ -1916,18 +2081,24 @@ function refreshSelectors() {
     }
 
     // summary table
-    // Compute total spigots (posts) including gate posts for SP14
+    // Compute total spigots (posts) including gate posts for SP15
     let gateCountTmp = 0;
     layouts.forEach((l) => { if (l.gateSegment) gateCountTmp++; });
     let discsTotal = posts + gateCountTmp * 2;
-    // Group panel sizes and show disc count per size
+    // Group panel sizes and show spigot count per size. When PANEL_STEP <= 0 (continuous widths),
+    // round widths to two decimal places to avoid floating‑point artefacts.
     const panelSummary = (() => {
       const m = {};
-      panels.forEach(w => m[w] = (m[w] || 0) + 1);
+      panels.forEach(w => {
+        const key = PANEL_STEP <= 0 ? (Math.round(w * 100) / 100).toFixed(2) : String(w);
+        m[key] = (m[key] || 0) + 1;
+      });
       return Object.entries(m)
-        .map(([w, n]) => {
-          let spigs = Math.max(2, Math.ceil((w - 2 * edge) / MAX_SPACING) + 1);
-          return `${n} × @${w} mm (${spigs} spigots each)`;
+        .map(([wStr, n]) => {
+          const widthNum = parseFloat(wStr);
+          let spigs = Math.max(2, Math.ceil((widthNum - 2 * edge) / MAX_SPACING) + 1);
+          if (spigs > MAX_DISCS_PER_PANEL) spigs = MAX_DISCS_PER_PANEL;
+          return `${n} × @${wStr} mm (${spigs} spigots each)`;
         })
         .join('<br>');
     })();
@@ -1942,22 +2113,21 @@ function refreshSelectors() {
 
     // order list
     const rows=[];
-    // Compute total number of gates and posts (spigots) for SP14 order list
+    // Compute total number of gates and posts (spigots) for SP15 order list
     let gateCountForPosts = 0;
     layouts.forEach((layout) => {
       if (layout.gateSegment) gateCountForPosts++;
     });
     const postsTotal = posts + gateCountForPosts * 2;
-    // Add SP14 post codes (spigots) based on finish
-    rows.push([`SP14-${finishSuffix}`, postsTotal]);
+    // Add SP15 post codes (spigots) based on finish
+    rows.push([`SP15-${finishSuffix}`, postsTotal]);
     // Add fixing kit codes for each post/spigot
     const fixKitMap = {
-      // SP14 fixing kit codes: one kit per post
-      'Concrete (Single Fix)': 'SP14FK-1',
-      'Concrete (Double Fix)': 'SP14FK-2',
-      'Steel Fix': 'SP14FK-3',
-      'Timber Fix (Coach Screw)': 'SP14FK-4',
-      'Timber Fix (Through Bolts)': 'SP14FK-5'
+      // SP15 fixing kit codes: one kit per post
+      'Concrete': 'SP15FK-1',
+      'Steel': 'SP15FK-2',
+      'Timber (Coach Screw)': 'SP15FK-3',
+      'Timber (Bolt Through)': 'SP15FK-4'
     };
     if (fix && fixKitMap[fix]) {
       rows.push([fixKitMap[fix], postsTotal]);
@@ -1966,7 +2136,7 @@ function refreshSelectors() {
     if(fix){
       console.log('Processing fixing components for:', JSON.stringify(fix));
       
-      // Fixing kit quantities are handled in the SP14 order list above based on postsTotal.
+      // Fixing kit quantities are handled in the SP15 order list above based on postsTotal.
     }
     if(hr!=='none'){
       // For powdercoated items, use base codes and add separate PC charges
@@ -2178,13 +2348,12 @@ function refreshSelectors() {
       if (code === 'S40WAR') return 'S40 Wall Attachment Right';
       if (code.startsWith('R40WA')) return 'R40 Wall Anchor';
 
-      // SP14 posts and fixing kits
-      if ((code === 'SP14') || (code.startsWith('SP14') && !code.startsWith('SP14FK'))) return 'SP14 Side Fix Post';
-      if (code === 'SP14FK-1') return 'SP14 Concrete Fixing Kit (Single Fix)';
-      if (code === 'SP14FK-2') return 'SP14 Concrete Fixing Kit (Double Fix)';
-      if (code === 'SP14FK-3') return 'SP14 Steel Fixing Kit';
-      if (code === 'SP14FK-4') return 'SP14 Timber Fixing Kit (Coach Screws)';
-      if (code === 'SP14FK-5') return 'SP14 Timber Fixing Kit (Through Bolts)';
+      // SP15 posts and fixing kits
+      if ((code === 'SP15') || (code.startsWith('SP15') && !code.startsWith('SP15FK'))) return 'SP15 Side Fix Post';
+      if (code === 'SP15FK-1') return 'SP15 Concrete Fixing Kit';
+      if (code === 'SP15FK-2') return 'SP15 Steel Fixing Kit';
+      if (code === 'SP15FK-3') return 'SP15 Timber Fixing Kit (Coach Screws)';
+      if (code === 'SP15FK-4') return 'SP15 Timber Fixing Kit (Through Bolt)';
       // Disc types - based on the UI labels found in the file
       if (code.includes('ASD50-SH')) return 'Adjustable Screw Head Standoff Disc';
       if (code.includes('ASD50-FH')) return 'Adjustable Flat Head Standoff Disc';
@@ -4219,7 +4388,7 @@ document.getElementById('pdfBtn').onclick = async () => {
       // Footer text
       pdf.setFontSize(10);
       pdf.setTextColor(120, 120, 120);
-      pdf.text('Generated by Opus Hardware SP14 Designer', 40, pageHeight - 24);
+      pdf.text('Generated by Opus Hardware SP15 Designer', 40, pageHeight - 24);
 
       // --- Add logo in bottom right ---
       const logoUrl = "https://cdn.shopify.com/s/files/1/0663/2738/0132/files/logomark_3eb73790-7aec-4bc9-ad74-0440d7517010.png?v=1729231583";
@@ -4280,7 +4449,7 @@ document.getElementById('view3dBtn').onclick = () => {
     }
 
     // Prepare 3D view data with correct fence geometry
-const sideCount = pts.length - 1;const runsAligned = [];for (let i = 0; i < sideCount; i++) {  const L = layouts[i];  if (L && Array.isArray(L.panelWidths)) { runsAligned.push(L); }  else {    const segLen = Math.hypot(pts[i+1][0]-pts[i][0], pts[i+1][1]-pts[i][1]);    runsAligned.push({ panelWidths: [], gap: 0, run: segLen, missing: true });  }}const fence = $('fenceType').value;const pool = fence === 'pool';const thk = $('glassThk').value;const ht = $('glassHt').value;const zone = $('windZone').value;let __maxSpacing = 400;let __edgeMax = 200;{const sys = pool ? 'pool' : 'balustrade';if (typeof ps14Lookup === 'function'){const row = ps14Lookup(sys, thk, ht, zone);if (row && row.internal < 999){__maxSpacing = row.internal;__edgeMax = row.edge;}}if (typeof EDGE_MIN !== 'undefined' && __edgeMax < EDGE_MIN) __edgeMax = EDGE_MIN;}const spMode = (document.querySelector('input[name="spigotMode"]:checked') || {}).value || 'auto';let __maxDiscsPerPanel = Infinity;if (spMode === '2') __maxDiscsPerPanel = 2;else if (spMode === '3') __maxDiscsPerPanel = 3;const view3dData = { runs: runsAligned, pts: pts, sideLens: sideLens, curShape: curShape, handrailType: $('handrailType').value, finishType: $('finishType').value, maxSpacing: __maxSpacing, edgeMax: __edgeMax, maxDiscsPerPanel: __maxDiscsPerPanel, pool: pool, thk: thk, ht: ht, zone: zone };
+    const sideCount = pts.length - 1;const runsAligned = [];for (let i = 0; i < sideCount; i++) {  const L = layouts[i];  if (L && Array.isArray(L.panelWidths)) { runsAligned.push(L); }  else {    const segLen = Math.hypot(pts[i+1][0]-pts[i][0], pts[i+1][1]-pts[i][1]);    runsAligned.push({ panelWidths: [], gap: 0, run: segLen, missing: true });  }}const fence = $('fenceType').value;const pool = fence === 'pool';const thk = $('glassThk').value;const ht = $('glassHt').value;const zone = $('windZone').value;let __maxSpacing = 400;let __edgeMax = 200;{const sys = pool ? 'pool' : 'balustrade';if (typeof ps13Lookup === 'function'){const row = ps13Lookup(sys, thk, ht, zone);if (row && row.internal < 999){__maxSpacing = row.internal;__edgeMax = row.edge;}}if (typeof EDGE_MIN !== 'undefined' && __edgeMax < EDGE_MIN) __edgeMax = EDGE_MIN;}const spMode = (document.querySelector('input[name="spigotMode"]:checked') || {}).value || 'auto';let __maxDiscsPerPanel = Infinity;if (spMode === '2') __maxDiscsPerPanel = 2;else if (spMode === '3') __maxDiscsPerPanel = 3;const view3dData = { runs: runsAligned, pts: pts, sideLens: sideLens, curShape: curShape, handrailType: $('handrailType').value, finishType: $('finishType').value, maxSpacing: __maxSpacing, edgeMax: __edgeMax, maxDiscsPerPanel: __maxDiscsPerPanel, pool: pool, thk: thk, ht: ht, zone: zone };
 
     // Create the 3D view HTML
     const html3d = generate3DViewHTML(view3dData);
@@ -4290,13 +4459,13 @@ const sideCount = pts.length - 1;const runsAligned = [];for (let i = 0; i < side
     // embedded via srcdoc ensures the HTML is executed properly in the same
     // origin.
     // Remove any existing 3D overlay/frame from previous views
-    const existingFrame = document.getElementById('sp14-3d-frame');
+    const existingFrame = document.getElementById('sp13-3d-frame');
     if (existingFrame) existingFrame.remove();
-    const existingOverlay = document.getElementById('sp14-3d-close');
+    const existingOverlay = document.getElementById('sp13-3d-close');
     if (existingOverlay) existingOverlay.remove();
     // Create the iframe to host the 3D HTML
     const frame = document.createElement('iframe');
-    frame.id = 'sp14-3d-frame';
+    frame.id = 'sp13-3d-frame';
     frame.style.position = 'fixed';
     frame.style.top = '0';
     frame.style.left = '0';
@@ -4309,7 +4478,7 @@ const sideCount = pts.length - 1;const runsAligned = [];for (let i = 0; i < side
     document.body.appendChild(frame);
     // Add a close button overlay outside the iframe
     const closeOverlay = document.createElement('div');
-    closeOverlay.id = 'sp14-3d-close';
+    closeOverlay.id = 'sp13-3d-close';
     closeOverlay.style.position = 'fixed';
     closeOverlay.style.top = '10px';
     closeOverlay.style.right = '10px';
@@ -4320,7 +4489,7 @@ const sideCount = pts.length - 1;const runsAligned = [];for (let i = 0; i < side
       if (frame.parentNode) frame.parentNode.removeChild(frame);
       if (closeOverlay.parentNode) closeOverlay.parentNode.removeChild(closeOverlay);
       // Remove the controls panel if present
-      const controlsEl = document.getElementById('sp14-3d-controls');
+      const controlsEl = document.getElementById('sp13-3d-controls');
       if (controlsEl && controlsEl.parentNode) controlsEl.parentNode.removeChild(controlsEl);
       // Restore page scrolling when exiting 3D view
       document.body.style.overflow = '';
@@ -4328,7 +4497,7 @@ const sideCount = pts.length - 1;const runsAligned = [];for (let i = 0; i < side
     document.body.appendChild(closeOverlay);
     // Add live calculation controls (spigot mode, mixed panels, recalc) below the exit button
     const controlsDiv = document.createElement('div');
-    controlsDiv.id = 'sp14-3d-controls';
+    controlsDiv.id = 'sp13-3d-controls';
     controlsDiv.style.position = 'fixed';
     controlsDiv.style.bottom = '20px';
     controlsDiv.style.right = '10px';
@@ -4515,8 +4684,8 @@ function generate3DViewHTML(data) {
   html += 'const maxPerPanel = (layoutData.maxDiscsPerPanel || Infinity);';
   html += 'if (spigotCount > maxPerPanel) spigotCount = maxPerPanel;';
   html += 'const spigotSpacing = (panelWidth - 2 * edgeMax) / Math.max(1, spigotCount - 1);';
-  // Use SP14 spigot geometry: a rectangular post 0.04m x 0.04m footprint and 0.35m tall (approximate dimensions based on SP14 drawing).
-  // SP14 spigot dimensions: approximate 80 mm wide at base, 42 mm wide at top. Use 0.08 m width and 0.04 m depth, 0.344 m height.
+  // Use SP15 spigot geometry: a rectangular post 0.04 m × 0.04 m footprint and 0.35 m tall (approximate dimensions based on SP15 drawing).
+  // SP15 spigot dimensions: approximate 80 mm wide at base, 42 mm wide at top. Use 0.08 m width and 0.04 m depth, 0.344 m height.
   // Use a cylindrical spigot so that posts stand upright.  Radius 0.04m, height 0.344m, 16 segments for a smooth round profile.
   html += 'const spigotGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.344, 16);';
   html += 'const spigotMaterial = new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.6, roughness: 0.4 });';
@@ -5606,7 +5775,7 @@ svgPad.onmouseleave = function() {
   // Define the base64-encoded Opus logo for embedding into the glass order PDF. This small logo (approx 200px width) is included here to avoid external requests.
   const OPUS_LOGO_SMALL = 'data:image/png;base64,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';
 
-  // Attach click handler to the Glass Order button.  This handler generates a PDF listing each side's panel widths and gaps using the current layouts and PS13 specs.  It renders a header bar, info box with shape and total run, lists panels and gate widths, and embeds the Opus logo at the bottom.
+  // Attach click handler to the Glass Order button.  This handler generates a PDF listing each side's panel widths and gaps using the current layouts and SP15 specs.  It renders a header bar, info box with shape and total run, lists panels and gate widths, and embeds the Opus logo at the bottom.
   const orderBtn = document.getElementById('orderPdfBtn');
 if (orderBtn) orderBtn.onclick = async () => {
     try {
@@ -5670,7 +5839,7 @@ if (orderBtn) orderBtn.onclick = async () => {
         pdf.setTextColor(255, 255, 255);
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(20);
-        pdf.text('Opus Hardware – SP14 Glass Order', pageWidth / 2, barY + 27, { align: 'center' });
+        pdf.text('Opus Hardware – SP15 Glass Order', pageWidth / 2, barY + 27, { align: 'center' });
 
         // Info box; height increased to accommodate glass note
         pdf.setTextColor(17, 17, 17);
@@ -5767,7 +5936,7 @@ if (orderBtn) orderBtn.onclick = async () => {
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(120, 120, 120);
-        pdf.text('Generated by Opus Hardware SP14 Designer', 40, pageHeight - 40);
+        pdf.text('Generated by Opus Hardware SP15 Designer', 40, pageHeight - 40);
         const logoImg = new Image();
         logoImg.src = OPUS_LOGO_SMALL;
         logoImg.onload = () => {
@@ -5776,10 +5945,10 @@ if (orderBtn) orderBtn.onclick = async () => {
           const logoX = pageWidth - logoW - 40;
           const logoY = pageHeight - logoH - 32;
           pdf.addImage(logoImg, 'PNG', logoX, logoY, logoW, logoH);
-        pdf.save('Opus_SP14_GlassOrder.pdf');
+          pdf.save('Opus_SP15_GlassOrder.pdf');
         };
         logoImg.onerror = () => {
-        pdf.save('Opus_SP14_GlassOrder.pdf');
+          pdf.save('Opus_SP15_GlassOrder.pdf');
         };
       }
 
@@ -6336,6 +6505,6 @@ updateViewBox();
   </script>
 
 
-<!-- Removed SP14 custom 3D viewer override; relying on existing 3D view implementation -->
+<!-- Removed SP15 custom 3D viewer override; relying on existing 3D view implementation -->
 </body>
 </html>
